@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/list_item_source"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#616161"
+        android:textSize="8sp"
+        tools:text="discovered"/>
+
+    <TextView
+        android:id="@+id/list_item_device_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/list_item_source"
+        android:textColor="#101010"
+        tools:text="Meizu m2"/>
+    <TextView
+        android:id="@+id/list_item_device_mac_address"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/list_item_device_name"
+        android:textColor="#101010"
+        tools:text="88005553535"/>
+
+
+</RelativeLayout>
