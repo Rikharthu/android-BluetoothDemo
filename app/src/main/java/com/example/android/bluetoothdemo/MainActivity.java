@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -21,12 +22,16 @@ import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
+import com.example.android.bluetoothdemo.bluetooth.AcceptThread;
+import com.example.android.bluetoothdemo.bluetooth.ConnectThread;
+import com.example.android.bluetoothdemo.bluetooth.ConnectedThread;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, ConnectThread.OnConnectedThreadListener, AcceptThread.OnAcceptedThreadListener {
     public static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     private static final int REQUEST_ENABLE_BLUETOOTH = 7103;
@@ -35,9 +40,13 @@ public class MainActivity extends AppCompatActivity {
     private SimpleAdapter arrayAdapter;
     private List<HashMap<String,String>> devices;
 
+    private ConnectedThread listenerThread;
+    private ConnectedThread senderThread;
+
     private RelativeLayout rootLayout;
     private Button turnBluetoothOnBtn;
     private Button discoverDevicesBtn;
+    private Button sendInfoBtn;
     private ListView deviceList;
     private ProgressBar progressBar;
 
@@ -51,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
         deviceList= (ListView) findViewById(R.id.device_list);
         progressBar= (ProgressBar) findViewById(R.id.progressBar);
         turnBluetoothOnBtn = (Button) findViewById(R.id.turn_bluetooth_on_button);
+        sendInfoBtn = (Button) findViewById(R.id.send_info_btn);
         discoverDevicesBtn= (Button) findViewById(R.id.discover_devices_button);
 
         turnBluetoothOnBtn.setOnClickListener(new View.OnClickListener() {
@@ -100,9 +110,11 @@ public class MainActivity extends AppCompatActivity {
                         Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
                 discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
                 startActivity(discoverableIntent);
-
             }
         }
+
+        deviceList.setOnItemClickListener(this);
+
     }
 
     private void scanForDevices(){
@@ -227,4 +239,50 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    public void startListeningBT(View view) {
+        Toast.makeText(this, "Listening for bluetooth connection", Toast.LENGTH_SHORT).show();
+
+        AcceptThread acceptThread = new AcceptThread(bluetoothAdapter);
+        acceptThread.setContext(this);
+        acceptThread.setListener(this);
+        acceptThread.start();
+
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        String macAddress = devices.get(position).get("DEVICE_MAC_ADDRESS");
+        Toast.makeText(this, "Connecting to "+macAddress, Toast.LENGTH_SHORT).show();
+
+        BluetoothDevice device = bluetoothAdapter.getRemoteDevice(macAddress);
+        ConnectThread connectThread = new ConnectThread(device,bluetoothAdapter);
+        connectThread.setContext(this);
+        connectThread.setListener(this);
+        connectThread.start();
+    }
+
+    @Override
+    public void onConnected() {
+
+    }
+
+    @Override
+    public void onReturnAcceptedThread(ConnectedThread thread) {
+        listenerThread = thread;
+    }
+
+    @Override
+    public void onReturnConnectedThread(ConnectedThread thread) {
+        senderThread=thread;
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                sendInfoBtn.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    public void sendInfo(View view) {
+        senderThread.write("Hello!".getBytes());
+    }
 }

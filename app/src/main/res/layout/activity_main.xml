@@ -26,7 +26,25 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
-        android:text="Connect"/>
+        android:text="Turn On"/>
+
+    <Button
+        android:id="@+id/listen_bluetooth_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/discover_devices_button"
+        android:onClick="startListeningBT"
+        android:text="Listen"/>
+
+    <Button
+        android:id="@+id/send_info_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/listen_bluetooth_btn"
+        android:onClick="sendInfo"
+        android:visibility="gone"
+        android:text="Send"/>
+
 
     <Button
         android:id="@+id/discover_devices_button"

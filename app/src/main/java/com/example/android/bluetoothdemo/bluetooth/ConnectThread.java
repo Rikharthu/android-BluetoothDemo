@@ -1,17 +1,35 @@
 package com.example.android.bluetoothdemo.bluetooth;
 
 
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.UUID;
 
+
 public class ConnectThread extends Thread {
-    private static final String NAME = "Bluetooth Demo";
+    public static final String LOG_TAG=ConnectThread.class.getSimpleName();
+
+    public interface OnConnectedThreadListener{
+        void onConnected();
+        void onReturnConnectedThread(ConnectedThread thread);
+    }
+
+    private static final String NAME = "38400000-8cf0-11bd-b23e-10b96e4ef00d";
     public static final UUID UUID= java.util.UUID.fromString(NAME);
+
+    private OnConnectedThreadListener listener;
+
+    private Activity activity;
+
+    public void setContext(Activity activity) {
+        this.activity = activity;
+    }
 
     private final BluetoothSocket socket;
     private final BluetoothDevice device;
@@ -30,6 +48,14 @@ public class ConnectThread extends Thread {
             tmp = device.createRfcommSocketToServiceRecord(UUID);
         } catch (IOException e) { }
         socket = tmp;
+    }
+
+    public OnConnectedThreadListener getListener() {
+        return listener;
+    }
+
+    public void setListener(OnConnectedThreadListener listener) {
+        this.listener = listener;
     }
 
     public void run() {
@@ -56,7 +82,17 @@ public class ConnectThread extends Thread {
     private void manageConnectedSocket(BluetoothSocket socket) {
         try {
             OutputStream outputStream = socket.getOutputStream();
-            outputStream.write(1);
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(activity, "connected!", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            ConnectedThread connectedThread = new ConnectedThread(socket);
+            connectedThread.start();
+            listener.onReturnConnectedThread(connectedThread);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
